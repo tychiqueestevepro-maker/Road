@@ -265,12 +265,10 @@ async function loadCameraPipeline() {
 }
 
 async function buildLivePayload(db: ReturnType<typeof createDb>["db"]) {
-  const [metrics, events, cameras, observations] = await Promise.all([
-    getMetrics(db),
-    listRoadEvents(db, { limit: 500 }),
-    listCameras(db),
-    listObservations(db, { limit: 100 })
-  ]);
+  const metrics = await getMetrics(db);
+  const events = await listRoadEvents(db, { limit: 500 });
+  const cameras = await listCameras(db);
+  const observations = await listObservations(db, { limit: 100 });
 
   return {
     streamed_at: new Date().toISOString(),
