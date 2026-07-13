@@ -66,36 +66,36 @@ export async function ensureDataSource(
 }
 
 export async function seedDataSources(db: RoadRealityDb) {
-  return Promise.all([
-    ensureDataSource(db, {
+  const sources = [
+    {
       slug: "sf511_traffic_events",
       name: "511 Traffic Events",
       sourceType: "declared_state",
       baseUrl: "https://api.511.org/traffic/events",
       pollIntervalSeconds: 60
-    }),
-    ensureDataSource(db, {
+    },
+    {
       slug: "sf511_wzdx",
       name: "511 WZDx",
       sourceType: "declared_state",
       baseUrl: "https://api.511.org/traffic/wzdx",
       pollIntervalSeconds: 60
-    }),
-    ensureDataSource(db, {
+    },
+    {
       slug: "datasf_temporary_closures",
       name: "DataSF Temporary Street Closures",
       sourceType: "declared_state",
       baseUrl: "https://data.sfgov.org/resource/8x25-yybr.json",
       pollIntervalSeconds: 300
-    }),
-    ensureDataSource(db, {
+    },
+    {
       slug: "manual_camera",
       name: "Manual Camera Provider",
       sourceType: "observed_state",
       pollIntervalSeconds: 30,
       metadata: { provider: "manual" }
-    }),
-    ensureDataSource(db, {
+    },
+    {
       slug: "caltrans_camera",
       name: "Caltrans CWWP2 Public Cameras",
       sourceType: "observed_state",
@@ -107,8 +107,13 @@ export async function seedDataSources(db: RoadRealityDb) {
         fair_use:
           "Do not bulk stream 10 or more Caltrans video feeds without written agreement."
       }
-    })
-  ]);
+    }
+  ];
+  const seededSources = [];
+  for (const source of sources) {
+    seededSources.push(await ensureDataSource(db, source));
+  }
+  return seededSources;
 }
 
 export async function listDataSources(db: RoadRealityDb) {
