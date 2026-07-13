@@ -1,0 +1,17 @@
+{
+  "Events": [
+    {
+      "EventID": "511-1",
+      "EventType": "Full Closure",
+      "Title": "Full closure on US-101 North",
+      "Description": "Full closure due to construction",
+      "RoadwayName": "US-101 North",
+      "Latitude": 37.75,
+      "Longitude": -122.4,
+      "StartTime": "2026-07-13T08:00:00Z",
+      "EndTime": "2026-07-13T12:00:00Z",
+      "LastUpdated": "2026-07-13T09:45:00Z"
+    }
+  ]
+}
+

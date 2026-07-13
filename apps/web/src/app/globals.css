@@ -1,0 +1,284 @@
+@import "tailwindcss";
+@import "mapbox-gl/dist/mapbox-gl.css";
+
+@theme {
+  --color-background: var(--background);
+  --color-background-subtle: var(--background-subtle);
+  --color-background-muted: var(--background-muted);
+
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-border: var(--primary-border);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --font-sans: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: "Geist Mono", "SF Mono", SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* --------------------------------------------------------------------------
+   Design tokens
+   -------------------------------------------------------------------------- */
+:root {
+  color-scheme: light;
+  
+  --background: #FFFFFF;
+  --background-subtle: #F8FAFC;
+  --background-muted: #F1F5F9;
+  
+  --foreground: #0F172A;
+  --foreground-secondary: #475569;
+  --foreground-muted: #64748B;
+  
+  --border: #E2E8F0;
+  --border-strong: #CBD5E1;
+  
+  --primary: #0866FF;
+  --primary-hover: #0059E6;
+  --primary-light: #EFF6FF;
+  --primary-soft: #DBEAFE;
+  --primary-border: #BFDBFE;
+  
+  --success: #16A34A;
+  --warning: #D97706;
+  --danger: #DC2626;
+
+  /* Legacy tokens for existing dashboard components */
+  --rr-bg: var(--background-subtle);
+  --rr-panel: var(--background);
+  --rr-panel-2: var(--background-muted);
+  --rr-border: var(--border);
+  --rr-text: var(--foreground);
+  --rr-muted: var(--foreground-muted);
+  --rr-cyan: #0ea5e9;
+  --rr-green: var(--success);
+  --rr-amber: var(--warning);
+  --rr-red: var(--danger);
+  --rr-blue: var(--primary);
+}
+
+html,
+body {
+  min-height: 100%;
+  background: var(--background);
+  color: var(--foreground);
+  letter-spacing: 0;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.mapboxgl-popup-content {
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 18px 60px rgb(15 23 42 / 18%);
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: var(--border);
+}
+
+@layer components {
+  .nav-button {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    padding: 0 0.65rem;
+    color: var(--rr-muted);
+    font-size: 0.82rem;
+  }
+
+  .nav-button:hover {
+    background: var(--rr-panel-2);
+    border-color: var(--rr-border);
+    color: var(--rr-text);
+  }
+
+  .icon-button {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid var(--rr-border);
+    border-radius: 6px;
+    background: #ffffff;
+    color: var(--rr-text);
+  }
+
+  .icon-button:hover {
+    border-color: var(--rr-cyan);
+  }
+}
+
+/* ==========================================================================
+   DOCUMENTATION TYPOGRAPHY
+   Automatically styles generic HTML tags inside the docs shell
+   ========================================================================== */
+.docs-content-area h1 {
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .docs-content-area h1 {
+    font-size: 44px;
+  }
+}
+
+.docs-content-area h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.docs-content-area h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--foreground);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.docs-content-area p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--foreground-secondary);
+  margin-bottom: 1rem;
+}
+
+.docs-content-area ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--foreground-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.docs-content-area .docs-lead {
+  font-size: 16px;
+  color: var(--foreground-muted);
+  margin-bottom: 3rem;
+}
+
+.docs-content-area table.docs-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: var(--foreground-secondary);
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  display: block;
+}
+
+.docs-content-area table.docs-table thead {
+  background-color: var(--background-subtle);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--foreground-muted);
+}
+
+.docs-content-area table.docs-table th,
+.docs-content-area table.docs-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.docs-content-area code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--primary);
+  background-color: var(--background-subtle);
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+}
+
+.docs-content-area .docs-callout {
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  background-color: var(--primary-light);
+  border: 1px solid var(--primary-border);
+  color: var(--foreground);
+}
+
+.docs-content-area .docs-callout-warning {
+  background-color: #FEF3C7; /* amber-50 */
+  border-color: #FDE68A; /* amber-200 */
+}
+
+/* Backwards compat for old dev buttons */
+.docs-content-area .dev-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 1.25rem;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  background-color: var(--primary);
+  color: white;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+}
+
+.docs-content-area .dev-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 1.25rem;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  background-color: white;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+   DEVELOPER PAGES (Legacy dark classes removed)
+   We will rely heavily on Tailwind utilities and our new tokens.
+   ========================================================================== */

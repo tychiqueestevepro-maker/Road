@@ -1,0 +1,33 @@
+name: verytis
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: verytis-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: verytis
+    ports:
+      - "5432:5432"
+    volumes:
+      - verytis_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d verytis"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  vision-service:
+    build:
+      context: ./apps/vision-service
+    container_name: verytis-vision
+    environment:
+      VISION_PORT: 5000
+    ports:
+      - "5000:5000"
+    profiles:
+      - vision
+
+volumes:
+  verytis_pgdata:

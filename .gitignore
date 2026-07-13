@@ -1,0 +1,13 @@
+node_modules
+.turbo
+.next
+dist
+coverage
+.env
+.env.local
+.env.production
+.env.*.local
+!.env.example
+*.log
+apps/vision-service/.venv
+apps/vision-service/__pycache__

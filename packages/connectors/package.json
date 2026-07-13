@@ -1,0 +1,34 @@
+{
+  "name": "@road-reality/connectors",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./sf511/traffic-events": "./src/sf511/traffic-events.ts",
+    "./sf511/wzdx": "./src/sf511/wzdx.ts",
+    "./datasf/temporary-closures": "./src/datasf/temporary-closures.ts",
+    "./datasf/mappers": "./src/datasf/mappers.ts",
+    "./cameras/types": "./src/cameras/types.ts",
+    "./cameras/camera-provider": "./src/cameras/camera-provider.ts",
+    "./cameras/manual-camera-provider": "./src/cameras/manual-camera-provider.ts",
+    "./cameras/caltrans-provider": "./src/cameras/caltrans-provider.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@road-reality/shared": "workspace:*",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/geojson": "^7946.0.16",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

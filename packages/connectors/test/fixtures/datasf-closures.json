@@ -1,0 +1,13 @@
+[
+  {
+    ":id": "row-1",
+    "street": "Halleck Street",
+    "closure_type": "Street Closure",
+    "start_date": "2026-07-13T07:00:00Z",
+    "end_date": "2026-07-13T14:00:00Z",
+    ":updated_at": "2026-07-13T06:30:00Z",
+    "latitude": "37.80128",
+    "longitude": "-122.45582"
+  }
+]
+

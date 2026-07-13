@@ -1,0 +1,30 @@
+{
+  "name": "@road-reality/vision",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./analyzers/types": "./src/analyzers/types.ts",
+    "./analyzers/mock-analyzer": "./src/analyzers/mock-analyzer.ts",
+    "./analyzers/object-detector": "./src/analyzers/object-detector.ts",
+    "./analyzers/vision-api-analyzer": "./src/analyzers/vision-api-analyzer.ts",
+    "./image-pipeline": "./src/image-pipeline.ts",
+    "./temporal": "./src/temporal.ts",
+    "./url-safety": "./src/url-safety.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@road-reality/shared": "workspace:*",
+    "ffmpeg-static": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.7.2"
+  }
+}

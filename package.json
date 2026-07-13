@@ -1,0 +1,33 @@
+{
+  "name": "verytis",
+  "private": true,
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "turbo dev --parallel",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "test": "vitest run --config vitest.config.ts",
+    "api": "pnpm --filter @road-reality/api dev",
+    "web": "pnpm --filter @road-reality/web dev",
+    "worker": "pnpm --filter @road-reality/worker worker",
+    "ingest:once": "pnpm --filter @road-reality/worker ingest:once",
+    "cameras:sync:caltrans": "pnpm --filter @road-reality/worker cameras:sync:caltrans",
+    "demo:seed": "pnpm --filter @road-reality/worker demo:seed",
+    "demo:run": "pnpm --filter @road-reality/worker demo:run",
+    "db:migrate": "pnpm --filter @road-reality/database db:migrate",
+    "db:seed": "pnpm --filter @road-reality/database db:seed",
+    "local:finish": "powershell -ExecutionPolicy Bypass -File scripts/finish-local.ps1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.19.2",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "pnpm": {
+    "overrides": {
+      "postcss": ">=8.5.10"
+    }
+  }
+}
