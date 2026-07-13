@@ -159,15 +159,7 @@ export function registerRoutes(app: FastifyInstance, db: ReturnType<typeof creat
     );
   });
 
-  app.get("/api/v1/cameras", async () => {
-    const cameras = await listCameras(db);
-    return Promise.all(
-      cameras.map(async (camera) => ({
-        ...camera,
-        snapshots: await listCameraSnapshots(db, camera.id)
-      }))
-    );
-  });
+  app.get("/api/v1/cameras", async () => listCameras(db));
 
   app.get("/api/v1/cameras/:id", async (request) => {
     const id = (request.params as { id: string }).id;
@@ -280,12 +272,7 @@ export async function buildLivePayload(db: ReturnType<typeof createDb>["db"]) {
     metrics,
     discrepancies: [],
     events: await enrichEventsForDisplay(events.filter(isLiveRoadEvent).slice(0, 100)),
-    cameras: await Promise.all(
-      cameras.map(async (camera) => ({
-        ...camera,
-        snapshots: await listCameraSnapshots(db, camera.id)
-      }))
-    ),
+    cameras,
     observations
   };
 }
