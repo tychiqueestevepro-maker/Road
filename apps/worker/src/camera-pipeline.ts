@@ -90,16 +90,19 @@ export async function analyzeRegisteredCamera(db: RoadRealityDb, cameraId: strin
   return { camera, snapshot, observation, analysis };
 }
 
-export async function runCameraAnalysisCycle(db: RoadRealityDb) {
+export async function runCameraAnalysisCycle(
+  db: RoadRealityDb,
+  options: { maxCameras?: number; concurrency?: number } = {}
+) {
   const config = loadConfig();
   const now = new Date();
   const cameras = await listCameras(db);
   const activeCameras = cameras.filter((camera) => camera.active && camera.streamUrl);
-  const dueCameras = activeCameras.filter((camera) =>
-    shouldPollCamera(camera, now, config.CAMERA_POLL_SECONDS)
-  );
+  const dueCameras = activeCameras
+    .filter((camera) => shouldPollCamera(camera, now, config.CAMERA_POLL_SECONDS))
+    .slice(0, options.maxCameras ?? activeCameras.length);
 
-  const results = await mapWithConcurrency(dueCameras, 4, async (camera) => {
+  const results = await mapWithConcurrency(dueCameras, options.concurrency ?? 4, async (camera) => {
     try {
       const result = await analyzeRegisteredCamera(db, camera.id);
       return {

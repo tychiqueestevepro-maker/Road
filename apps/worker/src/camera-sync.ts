@@ -19,22 +19,29 @@ export interface CameraSyncResult {
   checked_at: string;
 }
 
+export type CameraSyncOptions = CaltransProviderOptions & {
+  verifyStreams?: boolean;
+};
+
 export async function syncCaltransCameras(
   db: RoadRealityDb,
-  options: CaltransProviderOptions = {}
+  options: CameraSyncOptions = {}
 ): Promise<CameraSyncResult> {
   await seedDataSources(db);
   const source = await getDataSourceBySlug(db, "caltrans_camera");
   if (!source) throw new Error("caltrans_camera source is missing");
 
-  const provider = new CaltransProvider(options);
+  const { verifyStreams = true, ...providerOptions } = options;
+  const provider = new CaltransProvider(providerOptions);
   const cameras = await provider.listCameras();
-  const streamAvailability = new Map(
-    await mapWithConcurrency(cameras, 6, async (camera) => [
-      camera.externalId,
-      camera.streamUrl ? await isLiveStreamAvailable(camera.streamUrl) : false
-    ])
-  );
+  const streamAvailability = verifyStreams
+    ? new Map(
+        await mapWithConcurrency(cameras, 6, async (camera) => [
+          camera.externalId,
+          camera.streamUrl ? await isLiveStreamAvailable(camera.streamUrl) : false
+        ])
+      )
+    : new Map(cameras.map((camera) => [camera.externalId, Boolean(camera.streamUrl)]));
   let camerasUpserted = 0;
 
   for (const camera of cameras) {

@@ -10,6 +10,7 @@
     "./ingestion": "./src/ingestion.ts",
     "./engine-runner": "./src/engine-runner.ts",
     "./demo": "./src/demo.ts",
+    "./camera-sync": "./src/camera-sync.ts",
     "./camera-pipeline": "./src/camera-pipeline.ts"
   },
   "scripts": {
