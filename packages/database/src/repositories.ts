@@ -731,8 +731,15 @@ export async function getMetrics(db: RoadRealityDb) {
     connectors_total: metrics?.connectors_total ?? 0,
     active_discrepancies: metrics?.active_discrepancies ?? 0,
     observations_last_hour: metrics?.observations_last_hour ?? 0,
-    last_ingestion_at: metrics?.last_ingestion_at?.toISOString() ?? null
+    last_ingestion_at: toIsoString(metrics?.last_ingestion_at)
   };
+}
+
+function toIsoString(value: Date | string | null | undefined) {
+  if (!value) return null;
+  if (value instanceof Date) return value.toISOString();
+  const date = new Date(value);
+  return Number.isNaN(date.valueOf()) ? null : date.toISOString();
 }
 
 export function toRoadIntelligenceResponse(
