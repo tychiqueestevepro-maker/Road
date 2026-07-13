@@ -6,7 +6,7 @@ import { useLiveRoadData } from "@/lib/use-live-road-data";
 import { RoadMapPreview } from "@/components/marketing/road-map-preview";
 import { API_URL, API_URL_SOURCE, apiUrl } from "@/lib/api";
 
-type ServiceStatus = "operational" | "degraded" | "offline";
+type ServiceStatus = "operational" | "degraded" | "idle" | "offline";
 
 type EndpointProbe = {
   label: string;
@@ -136,7 +136,7 @@ async function checkEndpoint(
 ): Promise<EndpointProbe> {
   const startedAt = performance.now();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), 15000);
 
   try {
     const targetUrl = apiUrl(check.path);
@@ -223,6 +223,13 @@ function ServiceBadge({ status }: { status: ServiceStatus }) {
       </span>
     );
   }
+  if (status === "idle") {
+    return (
+      <span className="shrink-0 text-[11px] font-medium text-slate-600 bg-slate-50 px-2 py-0.5 rounded border border-slate-200">
+        Idle
+      </span>
+    );
+  }
   return (
     <span className="shrink-0 text-[11px] font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-100">
       Offline
@@ -272,7 +279,7 @@ function summarizeConnectors(online = 0, total = 0) {
   if (total <= 0) return { status: "degraded" as const, detail: "no source registry" };
   if (online === total) return { status: "operational" as const, detail: `${online}/${total} online` };
   if (online > 0) return { status: "degraded" as const, detail: `${online}/${total} online` };
-  return { status: "offline" as const, detail: `0/${total} online` };
+  return { status: "idle" as const, detail: `${total} registered, awaiting ingest` };
 }
 
 function summarizeVision(data: ReturnType<typeof useLiveRoadData>["data"]) {
@@ -288,11 +295,11 @@ function summarizeVision(data: ReturnType<typeof useLiveRoadData>["data"]) {
   if (observationsLastHour > 0) {
     return { status: "degraded" as const, detail: `${observationsLastHour} older observations` };
   }
-  return { status: "offline" as const, detail: "no recent observations" };
+  return { status: "idle" as const, detail: "waiting for camera observations" };
 }
 
 function summarizeIngestion(lastIngestionAt?: string | null) {
-  if (!lastIngestionAt) return { status: "offline" as const, detail: "no ingestion recorded" };
+  if (!lastIngestionAt) return { status: "idle" as const, detail: "not run yet" };
   const ageMs = Date.now() - new Date(lastIngestionAt).valueOf();
   if (!Number.isFinite(ageMs)) return { status: "degraded" as const, detail: "invalid timestamp" };
   const ageMinutes = Math.max(0, Math.round(ageMs / 60000));

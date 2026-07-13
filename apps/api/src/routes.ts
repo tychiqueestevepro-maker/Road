@@ -264,7 +264,7 @@ async function loadCameraPipeline() {
   return import("@road-reality/worker/camera-pipeline");
 }
 
-async function buildLivePayload(db: ReturnType<typeof createDb>["db"]) {
+export async function buildLivePayload(db: ReturnType<typeof createDb>["db"]) {
   const metrics = await getMetrics(db);
   const events = await listRoadEvents(db, { limit: 500 });
   const cameras = await listCameras(db);

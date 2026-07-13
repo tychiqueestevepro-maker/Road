@@ -11,6 +11,8 @@ import { registerPublicApiRoutes } from "./public-routes.js";
 import { registerAccessRoutes } from "./access-routes.js";
 import apiAuthPlugin from "./plugins/api-auth.js";
 
+export { buildLivePayload } from "./routes.js";
+
 type BuildApiAppOptions = {
   docsUi?: boolean;
 };

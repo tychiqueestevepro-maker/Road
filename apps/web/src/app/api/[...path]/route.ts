@@ -1,4 +1,4 @@
-import { buildApiApp } from "@road-reality/api";
+import { buildApiApp, buildLivePayload } from "@road-reality/api";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,16 +16,16 @@ function getApiApp() {
 }
 
 async function handle(request: Request) {
-  const { app } = await getApiApp();
+  const apiApp = await getApiApp();
   const url = new URL(request.url);
   if (url.pathname === "/api/v1/live" && request.method === "GET") {
-    return streamLiveState(app, request);
+    return streamLiveState(apiApp, request);
   }
 
   const payload = ["GET", "HEAD"].includes(request.method)
     ? undefined
     : Buffer.from(await request.arrayBuffer());
-  const response = await app.inject({
+  const response = await apiApp.app.inject({
     method: request.method as "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD",
     url: toFastifyUrl(url),
     headers: Object.fromEntries(request.headers.entries()),
@@ -52,7 +52,7 @@ async function handle(request: Request) {
   });
 }
 
-function streamLiveState(app: ApiApp["app"], request: Request) {
+function streamLiveState(apiApp: ApiApp, request: Request) {
   const encoder = new TextEncoder();
   let interval: ReturnType<typeof setInterval> | undefined;
 
@@ -60,13 +60,9 @@ function streamLiveState(app: ApiApp["app"], request: Request) {
     async start(controller) {
       const send = async () => {
         try {
-          const response = await app.inject({
-            method: "GET",
-            url: "/api/v1/live/state",
-            headers: Object.fromEntries(request.headers.entries())
-          });
+          const payload = await buildLivePayload(apiApp.db);
           controller.enqueue(encoder.encode(`event: road-state\n`));
-          controller.enqueue(encoder.encode(`data: ${response.payload}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n\n`));
         } catch (error) {
           controller.enqueue(encoder.encode(`event: error\n`));
           controller.enqueue(
