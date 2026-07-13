@@ -23,6 +23,8 @@ export type RoadMapPreviewProps = {
   events?: RoadEvent[];
   cameras?: Camera[];
   observations?: Observation[];
+  liveUpdatedAt?: string | null;
+  connectionStatus?: "connecting" | "connected" | "reconnecting" | "offline";
 };
 
 export function RoadMapPreview({
@@ -33,7 +35,9 @@ export function RoadMapPreview({
   interactive = true,
   events = [],
   cameras = [],
-  observations = []
+  observations = [],
+  liveUpdatedAt,
+  connectionStatus = "connecting"
 }: RoadMapPreviewProps) {
   const accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
   // Light style preferred for developer-hero
@@ -42,11 +46,17 @@ export function RoadMapPreview({
   
   const canRenderMap = Boolean(accessToken || !styleUrl.startsWith("mapbox://"));
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const [statusNowMs, setStatusNowMs] = useState(() => Date.now());
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => setNowMs(Date.now()), EVENT_MAP_REFRESH_MS);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => setStatusNowMs(Date.now()), 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -115,10 +125,10 @@ export function RoadMapPreview({
 
     // Cameras
     if (showCameras) {
-      const cams = cameras.length > 0 ? cameras : [
+      const cams = cameras.length > 0 ? cameras : mode === "developer-hero" ? [
         { id: "cam-1", latitude: 37.802, longitude: -122.454, name: "SF Cam 1" } as any,
         { id: "cam-2", latitude: 37.798, longitude: -122.458, name: "SF Cam 2" } as any
-      ];
+      ] : [];
       
       for (const camera of cams) {
         if (!camera.latitude || !camera.longitude) continue;
@@ -128,8 +138,10 @@ export function RoadMapPreview({
         if (currentDict[key]) {
           currentDict[key].setLngLat([camera.longitude, camera.latitude]);
         } else {
-          const wrapper = document.createElement('div');
+          const wrapper = document.createElement('a');
           wrapper.className = "marker-scaler";
+          wrapper.href = `/cameras/${camera.id}`;
+          wrapper.setAttribute("aria-label", `Open camera ${camera.name}`);
           wrapper.innerHTML = `
             <div class="camera-marker-light">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
@@ -144,9 +156,9 @@ export function RoadMapPreview({
 
     // Discrepancies
     if (showDiscrepancies) {
-      const evs = dedupedEvents.length > 0 ? dedupedEvents : [
+      const evs = dedupedEvents.length > 0 ? dedupedEvents : mode === "developer-hero" ? [
         { id: "disc_demo", latitude: 37.801, longitude: -122.456, title: "Halleck Street" } as any
-      ];
+      ] : [];
 
       for (const event of evs) {
         if (!event.latitude || !event.longitude) continue;
@@ -156,8 +168,10 @@ export function RoadMapPreview({
         if (currentDict[key]) {
           currentDict[key].setLngLat([event.longitude, event.latitude]);
         } else {
-          const wrapper = document.createElement('div');
+          const wrapper = document.createElement('a');
           wrapper.className = "marker-scaler";
+          wrapper.href = `/events/${event.id}`;
+          wrapper.setAttribute("aria-label", `Open event ${event.roadName ?? event.title ?? event.id}`);
           wrapper.innerHTML = `
             <div class="discrepancy-marker-pulsing">
               <div class="ring-outer"></div>
@@ -183,18 +197,16 @@ export function RoadMapPreview({
     // Do NOT return a cleanup function that removes all markers here,
     // otherwise they will all be removed on unmount/re-render.
     // The unmount cleanup is handled in the map init useEffect.
-  }, [cameras, dedupedEvents, showCameras, showDiscrepancies]);
+  }, [cameras, dedupedEvents, mode, showCameras, showDiscrepancies]);
 
   return (
     <div className="relative h-full w-full overflow-hidden rounded-[14px] bg-slate-50 border border-slate-200 shadow-sm">
-      <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-md border border-slate-200 bg-white/95 px-3 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm backdrop-blur-sm">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-        </span>
-        LIVE ROAD STATE
-        <span className="text-slate-400 ml-1 font-normal">Updated 12s ago</span>
-      </div>
+      <LiveMapBadge
+        connectionStatus={connectionStatus}
+        eventCount={dedupedEvents.length}
+        nowMs={statusNowMs}
+        updatedAt={liveUpdatedAt}
+      />
 
       <div ref={containerRef} className="h-full w-full min-h-[400px] md:min-h-[500px]" />
       
@@ -213,6 +225,7 @@ function MarkerStyles() {
         filter: grayscale(100%);
       }
       .marker-scaler {
+        display: block;
         transform: scale(var(--marker-scale, 1));
         transform-origin: center;
         transition: transform 0.1s ease-out;
@@ -222,12 +235,12 @@ function MarkerStyles() {
         height: 30px;
         border-radius: 50%;
         background: #ffffff;
-        border: 2px solid #0866FF;
+        border: 2px solid #16a34a;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #0866FF;
-        box-shadow: 0 4px 12px rgba(8, 102, 255, 0.15);
+        color: #16a34a;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.18);
         cursor: pointer;
       }
       .camera-marker-light:hover {
@@ -281,6 +294,62 @@ function MarkerStyles() {
       }
     `}</style>
   );
+}
+
+function LiveMapBadge({
+  connectionStatus,
+  eventCount,
+  nowMs,
+  updatedAt
+}: {
+  connectionStatus: NonNullable<RoadMapPreviewProps["connectionStatus"]>;
+  eventCount: number;
+  nowMs: number;
+  updatedAt?: string | null;
+}) {
+  const updatedAtMs = updatedAt ? new Date(updatedAt).valueOf() : Number.NaN;
+  const ageMs = Number.isFinite(updatedAtMs) ? nowMs - updatedAtMs : Number.NaN;
+  const isFresh = Number.isFinite(ageMs) && ageMs <= 10000;
+  const isLive = connectionStatus === "connected" && isFresh;
+  const dotClass = isLive
+    ? "bg-emerald-500"
+    : connectionStatus === "reconnecting"
+      ? "bg-amber-500"
+      : "bg-slate-400";
+  const pingClass = isLive ? "bg-emerald-400" : "bg-slate-300";
+  const label =
+    connectionStatus === "connected"
+      ? "LIVE ROAD STATE"
+      : connectionStatus === "reconnecting"
+        ? "RECONNECTING ROAD STATE"
+        : connectionStatus === "offline"
+          ? "ROAD STATE OFFLINE"
+          : "CONNECTING ROAD STATE";
+  const detail = Number.isFinite(ageMs)
+    ? `Updated ${formatRelativeAge(ageMs)} - ${eventCount} live events`
+    : `Waiting for stream - ${eventCount} live events`;
+
+  return (
+    <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-md border border-slate-200 bg-white/95 px-3 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm backdrop-blur-sm">
+      <span className="relative flex h-2 w-2">
+        {isLive ? (
+          <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${pingClass} opacity-75`} />
+        ) : null}
+        <span className={`relative inline-flex h-2 w-2 rounded-full ${dotClass}`} />
+      </span>
+      {label}
+      <span className="ml-1 font-normal text-slate-400">{detail}</span>
+    </div>
+  );
+}
+
+function formatRelativeAge(ageMs: number) {
+  const seconds = Math.max(0, Math.round(ageMs / 1000));
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  return `${hours}h ago`;
 }
 
 function eventTimeMs(event: RoadEvent) {

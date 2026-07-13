@@ -13,28 +13,37 @@ type EndpointProbe = {
   method: "GET";
   path: string;
   displayPath: string;
+  timeoutMs?: number;
   status: ServiceStatus;
   latencyMs?: number;
   checkedAt?: string;
   error?: string;
 };
 
-const endpointChecks: Array<Pick<EndpointProbe, "label" | "method" | "path" | "displayPath">> = [
+const endpointChecks: Array<Pick<EndpointProbe, "label" | "method" | "path" | "displayPath" | "timeoutMs">> = [
   { label: "API health", method: "GET", path: "/api/health", displayPath: "/api/health" },
   { label: "Metrics", method: "GET", path: "/api/metrics", displayPath: "/api/metrics" },
   {
     label: "Live state",
     method: "GET",
     path: "/api/v1/live/state",
-    displayPath: "/api/v1/live/state"
+    displayPath: "/api/v1/live/state",
+    timeoutMs: 45000
   },
   {
     label: "Events",
     method: "GET",
     path: "/api/v1/events?limit=1",
-    displayPath: "/api/v1/events"
+    displayPath: "/api/v1/events",
+    timeoutMs: 45000
   },
-  { label: "Cameras", method: "GET", path: "/api/v1/cameras", displayPath: "/api/v1/cameras" },
+  {
+    label: "Cameras",
+    method: "GET",
+    path: "/api/v1/cameras",
+    displayPath: "/api/v1/cameras",
+    timeoutMs: 45000
+  },
   {
     label: "Sources",
     method: "GET",
@@ -63,6 +72,8 @@ export default function StatusPage() {
             events={data?.events ?? []} 
             cameras={data?.cameras ?? []} 
             observations={data?.observations ?? []} 
+            liveUpdatedAt={data?.streamed_at}
+            connectionStatus={status}
           />
         </div>
         
@@ -132,11 +143,11 @@ function useEndpointProbes() {
 }
 
 async function checkEndpoint(
-  check: Pick<EndpointProbe, "label" | "method" | "path" | "displayPath">
+  check: Pick<EndpointProbe, "label" | "method" | "path" | "displayPath" | "timeoutMs">
 ): Promise<EndpointProbe> {
   const startedAt = performance.now();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
+  const timeout = setTimeout(() => controller.abort(), check.timeoutMs ?? 20000);
 
   try {
     const targetUrl = apiUrl(check.path);
@@ -155,9 +166,10 @@ async function checkEndpoint(
       error: response.ok ? undefined : `HTTP ${response.status}`
     };
   } catch (error) {
+    const aborted = error instanceof DOMException && error.name === "AbortError";
     return {
       ...check,
-      status: "offline",
+      status: aborted ? "degraded" : "offline",
       latencyMs: Math.round(performance.now() - startedAt),
       checkedAt: new Date().toISOString(),
       error: formatProbeError(error)
@@ -254,6 +266,7 @@ function formatApiTarget() {
 }
 
 function formatProbeError(error: unknown) {
+  if (error instanceof DOMException && error.name === "AbortError") return "timeout";
   const message = error instanceof Error ? error.message : "Request failed";
   if (message === "Failed to fetch") {
     return API_URL_SOURCE === "env" ? "Network/CORS failed" : "Same-origin API failed";

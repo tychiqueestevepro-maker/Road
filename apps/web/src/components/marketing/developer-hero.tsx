@@ -9,7 +9,7 @@ import { DiscrepancyMapCard } from "./discrepancy-map-card";
 import { useLiveRoadData } from "@/lib/use-live-road-data";
 
 export function DeveloperHero() {
-  const { data } = useLiveRoadData();
+  const { data, status } = useLiveRoadData();
 
   return (
     <section className="relative overflow-hidden bg-white px-6 py-12 md:px-16 lg:py-20">
@@ -54,6 +54,8 @@ export function DeveloperHero() {
                 events={data?.events ?? []}
                 cameras={data?.cameras ?? []}
                 observations={data?.observations ?? []}
+                liveUpdatedAt={data?.streamed_at}
+                connectionStatus={status}
               />
               <DiscrepancyMapCard event={data?.events?.[0]} />
             </div>
