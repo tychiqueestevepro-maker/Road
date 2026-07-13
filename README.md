@@ -191,12 +191,12 @@ If Vercel shows "No Next.js version detected", the project is looking at the rep
 Set only browser-safe frontend variables in Vercel:
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.verytis.dev
+NEXT_PUBLIC_API_URL=https://api.verytis.com
 NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_restricted_public_mapbox_token
 NEXT_PUBLIC_MAPBOX_STYLE_URL=mapbox://styles/mapbox/streets-v12
 ```
 
-Do not leave `NEXT_PUBLIC_API_URL` as an empty Vercel variable. If it is empty, the frontend falls back to `https://api.verytis.dev` in production and `http://localhost:4000` in local development. The `api.verytis.dev` DNS record must point to the deployed API before `/status` can show live routes as operational.
+Do not leave `NEXT_PUBLIC_API_URL` as an empty Vercel variable. If it is empty, the frontend falls back to `https://api.verytis.com` in production and `http://localhost:4000` in local development. The `api.verytis.com` DNS record must point to the deployed API before `/status` can show live routes as operational.
 
 Use `apps/web/.env.vercel.example` as the checklist. Do not put `VISION_API_KEY`, `DATABASE_URL`, `SF511_API_KEY`, `RESEND_API_KEY`, or webhook/API signing secrets in the Vercel frontend project.
 

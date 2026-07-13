@@ -33,7 +33,7 @@ const envSchema = z.object({
   DEMO_MODE: z.coerce.boolean().default(true),
   LOG_LEVEL: z.string().default("info"),
   // Developer API Platform
-  PUBLIC_API_BASE_URL: z.string().default("https://api.verytis.dev/v1"),
+  PUBLIC_API_BASE_URL: z.string().default("https://api.verytis.com/v1"),
   API_KEY_HASH_SECRET: z.string().default("dev-hash-secret-change-in-production"),
   API_RATE_LIMIT_PER_MINUTE: z.coerce.number().default(600),
   API_ACCESS_REQUEST_COOLDOWN_MINUTES: z.coerce.number().default(15),
@@ -42,7 +42,7 @@ const envSchema = z.object({
   ACCESS_RATE_LIMIT_PER_HOUR: z.coerce.number().default(5),
   API_ALLOWED_ORIGINS: z.string().default("http://localhost:3000"),
   RESEND_API_KEY: z.string().optional().default(""),
-  EMAIL_FROM: z.string().default("Verytis <api@verytis.dev>"),
+  EMAIL_FROM: z.string().default("Verytis <api@verytis.com>"),
   EMAIL_REPLY_TO: z.string().optional().default(""),
   WEBHOOK_SIGNING_SECRET: z.string().optional().default("")
 });

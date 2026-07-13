@@ -9,7 +9,7 @@ export default function EventsPage() {
       </p>
 
       <h2>List Events</h2>
-      <CodeBlock title="cURL">{`curl "https://api.verytis.dev/v1/events?latitude=37.8&longitude=-122.45&radius=5000" \\
+      <CodeBlock title="cURL">{`curl "https://api.verytis.com/v1/events?latitude=37.8&longitude=-122.45&radius=5000" \\
   -H "Authorization: Bearer $VERYTIS_API_KEY"`}</CodeBlock>
 
       <h2>Query Parameters</h2>

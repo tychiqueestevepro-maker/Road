@@ -51,7 +51,7 @@ export default function DocsHomePage() {
       <div className="mb-8">
         <CodeBlock 
           language="curl" 
-          code={`curl "https://api.verytis.dev/v1/discrepancies?latitude=37.8&longitude=-122.45&radius=5000" \\
+          code={`curl "https://api.verytis.com/v1/discrepancies?latitude=37.8&longitude=-122.45&radius=5000" \\
   -H "Authorization: Bearer $VERYTIS_API_KEY"`}
         />
       </div>

@@ -4,7 +4,7 @@ const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
 
 export const API_URL =
   configuredApiUrl ||
-  (process.env.NODE_ENV === "production" ? "https://api.verytis.dev" : "http://localhost:4000");
+  (process.env.NODE_ENV === "production" ? "https://api.verytis.com" : "http://localhost:4000");
 
 export const API_URL_SOURCE = configuredApiUrl ? "env" : "default";
 

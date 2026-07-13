@@ -11,8 +11,8 @@ export function buildApiAccessEmailHtml(opts: {
   const {
     apiKey,
     companyName,
-    baseUrl = "https://api.verytis.dev/v1",
-    quickstartUrl = "https://verytis.dev/docs/quickstart"
+    baseUrl = "https://api.verytis.com/v1",
+    quickstartUrl = "https://verytis.com/docs/quickstart"
   } = opts;
 
   return `<!DOCTYPE html>

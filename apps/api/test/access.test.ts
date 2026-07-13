@@ -39,7 +39,7 @@ describe("Access Routes", () => {
       cooldownMinutes: 15,
       allowAdditionalKeys: true,
       maxActiveKeysPerConsumer: 3,
-      emailFrom: "test@verytis.dev"
+      emailFrom: "test@verytis.com"
     });
 
     return app;

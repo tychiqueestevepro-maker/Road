@@ -12,7 +12,7 @@ export default function AuthenticationPage() {
       <CodeBlock title="HTTP Header">{`Authorization: Bearer vt_live_...`}</CodeBlock>
 
       <h2>Example Request</h2>
-      <CodeBlock title="cURL">{`curl "https://api.verytis.dev/v1/discrepancies" \\
+      <CodeBlock title="cURL">{`curl "https://api.verytis.com/v1/discrepancies" \\
   -H "Authorization: Bearer vt_live_xxxxxxxxxxxxxxxxx"`}</CodeBlock>
 
       <h2>Key Format</h2>

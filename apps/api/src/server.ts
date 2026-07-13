@@ -27,7 +27,7 @@ const API_ACCESS_ALLOW_ADDITIONAL_KEYS = process.env.API_ACCESS_ALLOW_ADDITIONAL
 const API_MAX_ACTIVE_KEYS_PER_CONSUMER = Number(process.env.API_MAX_ACTIVE_KEYS_PER_CONSUMER || "3");
 const API_ALLOWED_ORIGINS = (process.env.API_ALLOWED_ORIGINS || "http://localhost:3000").split(",").map((s) => s.trim());
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
-const EMAIL_FROM = process.env.EMAIL_FROM || "Verytis <api@verytis.dev>";
+const EMAIL_FROM = process.env.EMAIL_FROM || "Verytis <api@verytis.com>";
 const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO || "";
 
 const app = Fastify({
