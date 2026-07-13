@@ -3,7 +3,6 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import swagger from "@fastify/swagger";
-import swaggerUi from "@fastify/swagger-ui";
 import { createDb } from "@road-reality/database";
 import { loadConfig, loadLocalEnv } from "@road-reality/config";
 import { registerErrorHandler } from "./errors.js";
@@ -12,7 +11,12 @@ import { registerPublicApiRoutes } from "./public-routes.js";
 import { registerAccessRoutes } from "./access-routes.js";
 import apiAuthPlugin from "./plugins/api-auth.js";
 
-export async function buildApiApp() {
+type BuildApiAppOptions = {
+  docsUi?: boolean;
+};
+
+export async function buildApiApp(options: BuildApiAppOptions = {}) {
+  const { docsUi = true } = options;
   loadLocalEnv();
   const config = loadConfig();
   const { db, sql } = createDb(config.DATABASE_URL);
@@ -78,9 +82,12 @@ export async function buildApiApp() {
     }
   });
 
-  await app.register(swaggerUi, {
-    routePrefix: "/docs"
-  });
+  if (docsUi) {
+    const { default: swaggerUi } = await import("@fastify/swagger-ui");
+    await app.register(swaggerUi, {
+      routePrefix: "/docs"
+    });
+  }
 
   app.get("/openapi.json", async () => app.swagger());
 

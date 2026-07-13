@@ -8,7 +8,7 @@ type ApiApp = Awaited<ReturnType<typeof buildApiApp>>;
 let apiAppPromise: Promise<ApiApp> | undefined;
 
 function getApiApp() {
-  apiAppPromise ??= buildApiApp().then(async (apiApp) => {
+  apiAppPromise ??= buildApiApp({ docsUi: false }).then(async (apiApp) => {
     await apiApp.app.ready();
     return apiApp;
   });
