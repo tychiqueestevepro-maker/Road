@@ -11,3 +11,5 @@ coverage
 *.log
 apps/vision-service/.venv
 apps/vision-service/__pycache__
+
+.vercel
