@@ -186,6 +186,8 @@ docker compose --profile vision up -d vision-service
 
 The frontend is Vercel-ready as a monorepo app. Create the Vercel project with Root Directory set to `apps/web`; Vercel will use `apps/web/vercel.json`.
 
+If Vercel shows "No Next.js version detected", the project is looking at the repository root instead of the frontend package. In Vercel Project Settings, set Build & Development Settings -> Root Directory to `apps/web`, then redeploy without build cache. A root-level `vercel.json` is also included as a fallback for root-based imports, but the app-level Root Directory is the recommended setup.
+
 Set only browser-safe frontend variables in Vercel:
 
 ```bash
