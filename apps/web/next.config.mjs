@@ -9,7 +9,25 @@ if (existsSync(rootEnv)) {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: []
+  transpilePackages: [
+    "@road-reality/api",
+    "@road-reality/config",
+    "@road-reality/connectors",
+    "@road-reality/database",
+    "@road-reality/email",
+    "@road-reality/road-engine",
+    "@road-reality/shared",
+    "@road-reality/vision",
+    "@road-reality/worker"
+  ],
+  webpack(config) {
+    config.resolve.extensionAlias = {
+      ...(config.resolve.extensionAlias ?? {}),
+      ".js": [".ts", ".tsx", ".js", ".jsx"],
+      ".mjs": [".mts", ".mjs"]
+    };
+    return config;
+  }
 };
 
 export default nextConfig;

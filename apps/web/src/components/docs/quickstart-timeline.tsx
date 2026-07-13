@@ -54,14 +54,14 @@ export function QuickstartTimeline() {
               id: "curl",
               label: "cURL",
               language: "bash",
-              code: `curl "https://api.verytis.com/v1/discrepancies?latitude=37.8&longitude=-122.45&radius=5000&status=active" \\
+              code: `curl "https://verytis.com/api/v1/discrepancies?latitude=37.8&longitude=-122.45&radius=5000&status=active" \\
   -H "Authorization: Bearer $VERYTIS_API_KEY"`
             },
             {
               id: "typescript",
               label: "TypeScript",
               language: "typescript",
-              code: `const res = await fetch("https://api.verytis.com/v1/discrepancies?latitude=37.8&longitude=-122.45&radius=5000&status=active", {
+              code: `const res = await fetch("https://verytis.com/api/v1/discrepancies?latitude=37.8&longitude=-122.45&radius=5000&status=active", {
   headers: {
     "Authorization": \`Bearer \${process.env.VERYTIS_API_KEY}\`
   }
@@ -78,7 +78,7 @@ import requests
 headers = {
     "Authorization": f"Bearer {os.environ.get('VERYTIS_API_KEY')}"
 }
-url = "https://api.verytis.com/v1/discrepancies?latitude=37.8&longitude=-122.45&radius=5000&status=active"
+url = "https://verytis.com/api/v1/discrepancies?latitude=37.8&longitude=-122.45&radius=5000&status=active"
 
 response = requests.get(url, headers=headers)
 data = response.json()`

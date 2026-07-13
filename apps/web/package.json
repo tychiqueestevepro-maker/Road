@@ -10,6 +10,7 @@
     "start": "next start -p 3000"
   },
   "dependencies": {
+    "@road-reality/api": "workspace:*",
     "@tanstack/react-query": "5.101.2",
     "dotenv": "^16.4.7",
     "hls.js": "^1.6.16",

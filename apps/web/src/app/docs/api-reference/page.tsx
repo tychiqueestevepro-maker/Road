@@ -83,7 +83,7 @@ export default function ApiReferencePage() {
       <p><code>Authorization: Bearer vt_live_...</code></p>
 
       <h2>Base URL</h2>
-      <p><code>https://api.verytis.com/v1</code></p>
+      <p><code>https://verytis.com/api/v1</code></p>
     </>
   );
 }

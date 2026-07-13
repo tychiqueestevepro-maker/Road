@@ -59,7 +59,7 @@ export default function RoadStatePage() {
       </p>
 
       <h2>Road State Endpoint</h2>
-      <CodeBlock title="cURL">{`curl "https://api.verytis.com/v1/road-state?latitude=37.801&longitude=-122.456&radius=100" \\
+      <CodeBlock title="cURL">{`curl "https://verytis.com/api/v1/road-state?latitude=37.801&longitude=-122.456&radius=100" \\
   -H "Authorization: Bearer $VERYTIS_API_KEY"`}</CodeBlock>
 
       <CodeBlock title="JSON">{`{

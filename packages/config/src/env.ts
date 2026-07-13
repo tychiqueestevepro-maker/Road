@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { loadRoadEngineConfig } from "./road-engine.js";
 
+const logLevelSchema = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() ? value.trim().toLowerCase() : "info"),
+  z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
+);
+
 const envSchema = z.object({
   NODE_ENV: z.string().default("development"),
   WEB_PORT: z.coerce.number().default(3000),
@@ -31,9 +36,9 @@ const envSchema = z.object({
   VISION_MODEL: z.string().optional().default(""),
   VISION_SERVICE_URL: z.string().url().default("http://localhost:5000"),
   DEMO_MODE: z.coerce.boolean().default(true),
-  LOG_LEVEL: z.string().default("info"),
+  LOG_LEVEL: logLevelSchema,
   // Developer API Platform
-  PUBLIC_API_BASE_URL: z.string().default("https://api.verytis.com/v1"),
+  PUBLIC_API_BASE_URL: z.string().default("https://verytis.com/api/v1"),
   API_KEY_HASH_SECRET: z.string().default("dev-hash-secret-change-in-production"),
   API_RATE_LIMIT_PER_MINUTE: z.coerce.number().default(600),
   API_ACCESS_REQUEST_COOLDOWN_MINUTES: z.coerce.number().default(15),

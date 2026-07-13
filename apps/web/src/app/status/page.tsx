@@ -20,12 +20,27 @@ type EndpointProbe = {
 };
 
 const endpointChecks: Array<Pick<EndpointProbe, "label" | "method" | "path" | "displayPath">> = [
-  { label: "API health", method: "GET", path: "/health", displayPath: "/health" },
-  { label: "Metrics", method: "GET", path: "/metrics", displayPath: "/metrics" },
-  { label: "Live state", method: "GET", path: "/api/v1/live/state", displayPath: "/v1/live/state" },
-  { label: "Events", method: "GET", path: "/api/v1/events?limit=1", displayPath: "/v1/events" },
-  { label: "Cameras", method: "GET", path: "/api/v1/cameras", displayPath: "/v1/cameras" },
-  { label: "Sources", method: "GET", path: "/api/v1/connectors", displayPath: "/v1/connectors" }
+  { label: "API health", method: "GET", path: "/api/health", displayPath: "/api/health" },
+  { label: "Metrics", method: "GET", path: "/api/metrics", displayPath: "/api/metrics" },
+  {
+    label: "Live state",
+    method: "GET",
+    path: "/api/v1/live/state",
+    displayPath: "/api/v1/live/state"
+  },
+  {
+    label: "Events",
+    method: "GET",
+    path: "/api/v1/events?limit=1",
+    displayPath: "/api/v1/events"
+  },
+  { label: "Cameras", method: "GET", path: "/api/v1/cameras", displayPath: "/api/v1/cameras" },
+  {
+    label: "Sources",
+    method: "GET",
+    path: "/api/v1/connectors",
+    displayPath: "/api/v1/connectors"
+  }
 ];
 
 export default function StatusPage() {
@@ -222,20 +237,19 @@ function formatEndpointDetail(endpoint: EndpointProbe) {
 }
 
 function formatApiTarget() {
+  if (API_URL_SOURCE === "same-origin") return "same origin";
   try {
     const host = new URL(API_URL).host;
     return API_URL_SOURCE === "env" ? host : `${host} default`;
   } catch {
-    return API_URL_SOURCE === "env" ? "custom API target" : "default API target";
+    return API_URL_SOURCE === "env" ? "custom API target" : "same-origin API target";
   }
 }
 
 function formatProbeError(error: unknown) {
   const message = error instanceof Error ? error.message : "Request failed";
   if (message === "Failed to fetch") {
-    return API_URL_SOURCE === "env"
-      ? "Network/CORS failed"
-      : "API URL missing or DNS failed";
+    return API_URL_SOURCE === "env" ? "Network/CORS failed" : "Same-origin API failed";
   }
   return message;
 }

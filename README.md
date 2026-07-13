@@ -188,15 +188,14 @@ The frontend is Vercel-ready as a monorepo app. Create the Vercel project with R
 
 If Vercel shows "No Next.js version detected", the project is looking at the repository root instead of the frontend package. In Vercel Project Settings, set Build & Development Settings -> Root Directory to `apps/web`, then redeploy without build cache. A root-level `vercel.json` is also included as a fallback for root-based imports, but the app-level Root Directory is the recommended setup.
 
-Set only browser-safe frontend variables in Vercel:
+Set only browser-safe frontend variables in Vercel. For a single Vercel project on `verytis.com`, omit `NEXT_PUBLIC_API_URL` so the frontend uses same-origin `/api/...` routes:
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.verytis.com
 NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_restricted_public_mapbox_token
 NEXT_PUBLIC_MAPBOX_STYLE_URL=mapbox://styles/mapbox/streets-v12
 ```
 
-Do not leave `NEXT_PUBLIC_API_URL` as an empty Vercel variable. If it is empty, the frontend falls back to `https://api.verytis.com` in production and `http://localhost:4000` in local development. The `api.verytis.com` DNS record must point to the deployed API before `/status` can show live routes as operational.
+If you later deploy a separate API project, set `NEXT_PUBLIC_API_URL` to that API origin only after that project and DNS record both exist.
 
 Use `apps/web/.env.vercel.example` as the checklist. Do not put `VISION_API_KEY`, `DATABASE_URL`, `SF511_API_KEY`, `RESEND_API_KEY`, or webhook/API signing secrets in the Vercel frontend project.
 

@@ -18,22 +18,23 @@ import {
   toRoadIntelligenceResponse,
   upsertCamera
 } from "@road-reality/database";
-import { getConnectorHealth, runIngestionOnce } from "@road-reality/worker/ingestion";
-import { runDiscrepancyEngine } from "@road-reality/worker/engine-runner";
-import { seedDemoScenario } from "@road-reality/worker/demo";
-import { analyzeRegisteredCamera } from "@road-reality/worker/camera-pipeline";
 import { filtersSchema, createCameraSchema } from "./query.js";
 import { ApiError } from "./errors.js";
 import { enrichEventsForDisplay, liveEventDisplayTtlSeconds } from "./geocoding.js";
 
 export function registerRoutes(app: FastifyInstance, db: ReturnType<typeof createDb>["db"]) {
-  app.get("/health", async () => ({
+  const healthHandler = async () => ({
     ok: true,
     service: "verytis-api",
     time: new Date().toISOString()
-  }));
+  });
+  const metricsHandler = async () => getMetrics(db);
 
-  app.get("/metrics", async () => getMetrics(db));
+  app.get("/health", healthHandler);
+  app.get("/api/health", healthHandler);
+
+  app.get("/metrics", metricsHandler);
+  app.get("/api/metrics", metricsHandler);
 
   app.get("/api/v1/live/state", async () => buildLivePayload(db));
 
@@ -77,7 +78,11 @@ export function registerRoutes(app: FastifyInstance, db: ReturnType<typeof creat
 
   app.get("/api/v1/connectors", async () => {
     await seedDataSources(db);
-    const [sources, health] = await Promise.all([listDataSources(db), getConnectorHealth()]);
+    const [{ getConnectorHealth }, sources] = await Promise.all([
+      loadIngestionWorker(),
+      listDataSources(db)
+    ]);
+    const health = await getConnectorHealth();
     const healthBySource = new Map(health.map((item) => [item.source, item]));
     return sources.map((source) => ({
       ...source,
@@ -92,6 +97,7 @@ export function registerRoutes(app: FastifyInstance, db: ReturnType<typeof creat
 
   app.get("/api/v1/connectors/:source/health", async (request) => {
     const source = (request.params as { source: string }).source;
+    const { getConnectorHealth } = await loadIngestionWorker();
     const health = await getConnectorHealth();
     const found = health.find((item) => item.source === source);
     if (found) return found;
@@ -110,6 +116,10 @@ export function registerRoutes(app: FastifyInstance, db: ReturnType<typeof creat
   });
 
   app.post("/api/v1/ingestion/run", async () => {
+    const [{ runIngestionOnce }, { runDiscrepancyEngine }] = await Promise.all([
+      loadIngestionWorker(),
+      loadEngineRunner()
+    ]);
     const ingestion = await runIngestionOnce(db);
     const discrepancies = await runDiscrepancyEngine(db);
     return { ingestion, discrepancies_created_or_updated: discrepancies.length };
@@ -197,6 +207,10 @@ export function registerRoutes(app: FastifyInstance, db: ReturnType<typeof creat
 
   app.post("/api/v1/cameras/:id/analyze", async (request) => {
     const id = (request.params as { id: string }).id;
+    const [{ analyzeRegisteredCamera }, { runDiscrepancyEngine }] = await Promise.all([
+      loadCameraPipeline(),
+      loadEngineRunner()
+    ]);
     const result = await analyzeRegisteredCamera(db, id);
     await runDiscrepancyEngine(db);
     return result;
@@ -218,6 +232,10 @@ export function registerRoutes(app: FastifyInstance, db: ReturnType<typeof creat
   }));
 
   app.get("/api/v1/demo/scenario", async () => {
+    const [{ seedDemoScenario }, { runDiscrepancyEngine }] = await Promise.all([
+      loadDemoWorker(),
+      loadEngineRunner()
+    ]);
     const seed = await seedDemoScenario(db);
     const discrepancies = await runDiscrepancyEngine(db);
     return {
@@ -228,6 +246,22 @@ export function registerRoutes(app: FastifyInstance, db: ReturnType<typeof creat
       discrepancies
     };
   });
+}
+
+async function loadIngestionWorker() {
+  return import("@road-reality/worker/ingestion");
+}
+
+async function loadEngineRunner() {
+  return import("@road-reality/worker/engine-runner");
+}
+
+async function loadDemoWorker() {
+  return import("@road-reality/worker/demo");
+}
+
+async function loadCameraPipeline() {
+  return import("@road-reality/worker/camera-pipeline");
 }
 
 async function buildLivePayload(db: ReturnType<typeof createDb>["db"]) {
