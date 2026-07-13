@@ -196,6 +196,8 @@ NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_restricted_public_mapbox_token
 NEXT_PUBLIC_MAPBOX_STYLE_URL=mapbox://styles/mapbox/streets-v12
 ```
 
+Do not leave `NEXT_PUBLIC_API_URL` as an empty Vercel variable. If it is empty, the frontend falls back to `https://api.verytis.dev` in production and `http://localhost:4000` in local development. The `api.verytis.dev` DNS record must point to the deployed API before `/status` can show live routes as operational.
+
 Use `apps/web/.env.vercel.example` as the checklist. Do not put `VISION_API_KEY`, `DATABASE_URL`, `SF511_API_KEY`, `RESEND_API_KEY`, or webhook/API signing secrets in the Vercel frontend project.
 
 Run the API, worker, database, and optional local vision service outside the Vercel frontend project. For production OpenAI vision, the backend/worker environment should use:

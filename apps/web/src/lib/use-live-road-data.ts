@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { API_URL, getLiveSnapshot, livePayloadSchema, type LivePayload } from "./api";
+import { apiUrl, getLiveSnapshot, livePayloadSchema, type LivePayload } from "./api";
 
 export type LiveConnectionState = "connecting" | "connected" | "reconnecting" | "offline";
 
@@ -30,7 +30,7 @@ export function useLiveRoadData() {
           if (!hasDataRef.current) setStatus("offline");
         });
 
-    const source = new EventSource(`${API_URL}/api/v1/live`);
+    const source = new EventSource(apiUrl("/api/v1/live"));
     const startFallbackPolling = () => {
       if (fallbackInterval) return;
       fallbackInterval = setInterval(() => {

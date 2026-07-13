@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { DeveloperHeader } from "@/components/marketing/developer-header";
 import { useLiveRoadData } from "@/lib/use-live-road-data";
 import { RoadMapPreview } from "@/components/marketing/road-map-preview";
-import { API_URL } from "@/lib/api";
+import { API_URL, API_URL_SOURCE, apiUrl } from "@/lib/api";
 
 type ServiceStatus = "operational" | "degraded" | "offline";
 
@@ -56,6 +56,9 @@ export default function StatusPage() {
             <h2 className="text-[14px] font-semibold text-slate-900 mb-4 uppercase tracking-wider">
               API Route Status
             </h2>
+            <div className="mb-4 rounded border border-slate-100 bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
+              Target: <span className="font-mono text-slate-700">{formatApiTarget()}</span>
+            </div>
             
             <div className="flex flex-col gap-4">
               {endpoints.map((endpoint) => (
@@ -121,7 +124,8 @@ async function checkEndpoint(
   const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
-    const response = await fetch(`${API_URL}${check.path}`, {
+    const targetUrl = apiUrl(check.path);
+    const response = await fetch(targetUrl, {
       method: check.method,
       headers: { accept: "application/json" },
       cache: "no-store",
@@ -141,7 +145,7 @@ async function checkEndpoint(
       status: "offline",
       latencyMs: Math.round(performance.now() - startedAt),
       checkedAt: new Date().toISOString(),
-      error: error instanceof Error ? error.message : "Request failed"
+      error: formatProbeError(error)
     };
   } finally {
     clearTimeout(timeout);
@@ -215,6 +219,25 @@ function formatEndpointDetail(endpoint: EndpointProbe) {
   if (endpoint.error) return endpoint.error;
   if (typeof endpoint.latencyMs === "number") return `${endpoint.latencyMs} ms`;
   return "checking";
+}
+
+function formatApiTarget() {
+  try {
+    const host = new URL(API_URL).host;
+    return API_URL_SOURCE === "env" ? host : `${host} default`;
+  } catch {
+    return API_URL_SOURCE === "env" ? "custom API target" : "default API target";
+  }
+}
+
+function formatProbeError(error: unknown) {
+  const message = error instanceof Error ? error.message : "Request failed";
+  if (message === "Failed to fetch") {
+    return API_URL_SOURCE === "env"
+      ? "Network/CORS failed"
+      : "API URL missing or DNS failed";
+  }
+  return message;
 }
 
 function summarizeEndpointStatus(endpoints: EndpointProbe[]) {

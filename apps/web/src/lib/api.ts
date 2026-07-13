@@ -1,6 +1,18 @@
 import { z } from "zod";
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+
+export const API_URL =
+  configuredApiUrl ||
+  (process.env.NODE_ENV === "production" ? "https://api.verytis.dev" : "http://localhost:4000");
+
+export const API_URL_SOURCE = configuredApiUrl ? "env" : "default";
+
+export function apiUrl(path: string) {
+  const normalizedBase = API_URL.replace(/\/+$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${normalizedBase}${normalizedPath}`;
+}
 
 export const discrepancySchema = z.object({
   id: z.string(),
@@ -85,7 +97,7 @@ export const observationSchema = z.object({
 export type Observation = z.infer<typeof observationSchema>;
 
 export async function apiGet<T>(path: string, schema: z.ZodType<T>): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetch(apiUrl(path), {
     headers: { accept: "application/json" },
     cache: "no-store"
   });
