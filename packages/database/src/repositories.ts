@@ -694,29 +694,44 @@ export async function getLatestIngestion(db: RoadRealityDb) {
 }
 
 export async function getMetrics(db: RoadRealityDb) {
-  const [connectorsTotal] = await db
-    .select({ count: drizzleSql<number>`count(*)::int` })
-    .from(dataSources);
-  const [connectorsOnline] = await db
-    .select({ count: drizzleSql<number>`count(*)::int` })
-    .from(dataSources)
-    .where(drizzleSql`${dataSources.lastSuccessAt} > now() - interval '15 minutes'`);
-  const [activeDiscrepancies] = await db
-    .select({ count: drizzleSql<number>`count(*)::int` })
-    .from(discrepancies)
-    .where(eq(discrepancies.status, "active"));
-  const [observationsLastHour] = await db
-    .select({ count: drizzleSql<number>`count(*)::int` })
-    .from(roadObservations)
-    .where(drizzleSql`${roadObservations.observedAt} > now() - interval '1 hour'`);
-  const latest = await getLatestIngestion(db);
+  const [metrics] = await db.execute<{
+    connectors_online: number;
+    connectors_total: number;
+    active_discrepancies: number;
+    observations_last_hour: number;
+    last_ingestion_at: Date | null;
+  }>(drizzleSql`
+    select
+      (select count(*)::int from data_sources) as connectors_total,
+      (
+        select count(*)::int
+        from data_sources
+        where last_success_at > now() - interval '15 minutes'
+      ) as connectors_online,
+      (
+        select count(*)::int
+        from discrepancies
+        where status = 'active'
+      ) as active_discrepancies,
+      (
+        select count(*)::int
+        from road_observations
+        where observed_at > now() - interval '1 hour'
+      ) as observations_last_hour,
+      (
+        select coalesce(completed_at, started_at)
+        from ingestion_runs
+        order by started_at desc
+        limit 1
+      ) as last_ingestion_at
+  `);
 
   return {
-    connectors_online: connectorsOnline?.count ?? 0,
-    connectors_total: connectorsTotal?.count ?? 0,
-    active_discrepancies: activeDiscrepancies?.count ?? 0,
-    observations_last_hour: observationsLastHour?.count ?? 0,
-    last_ingestion_at: latest?.completedAt?.toISOString() ?? latest?.startedAt?.toISOString() ?? null
+    connectors_online: metrics?.connectors_online ?? 0,
+    connectors_total: metrics?.connectors_total ?? 0,
+    active_discrepancies: metrics?.active_discrepancies ?? 0,
+    observations_last_hour: metrics?.observations_last_hour ?? 0,
+    last_ingestion_at: metrics?.last_ingestion_at?.toISOString() ?? null
   };
 }
 
