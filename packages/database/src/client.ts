@@ -7,10 +7,19 @@ export function createSqlClient(databaseUrl = process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL is required");
   }
 
+  const database = new URL(databaseUrl);
+  const usesSupabasePooler = database.hostname.endsWith(".pooler.supabase.com");
+  const requiresSsl =
+    usesSupabasePooler ||
+    database.hostname.endsWith(".supabase.com") ||
+    database.searchParams.get("sslmode") === "require";
+
   return postgres(databaseUrl, {
     max: Number.parseInt(process.env.DATABASE_POOL_MAX ?? "10", 10),
     idle_timeout: 20,
-    connect_timeout: 10
+    connect_timeout: 10,
+    prepare: !usesSupabasePooler,
+    ssl: requiresSsl ? "require" : undefined
   });
 }
 
@@ -23,4 +32,3 @@ export function createDb(databaseUrl = process.env.DATABASE_URL) {
 }
 
 export type RoadRealityDb = ReturnType<typeof createDb>["db"];
-
