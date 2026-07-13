@@ -16,6 +16,7 @@ import {
   readNumber,
   readString
 } from "../http.js";
+import { isWithinSanFranciscoScope } from "./scope.js";
 
 const SOURCE = "sf511_wzdx";
 const BASE_URL = "https://api.511.org/traffic/wzdx";
@@ -108,8 +109,16 @@ export function normalizeWzdxRoadEvent(
   value: unknown,
   ingestedAt = new Date()
 ): NormalizedRoadEvent | undefined {
-  const record = asRecord(value);
-  if (!record) return undefined;
+  const feature = asRecord(value);
+  if (!feature) return undefined;
+
+  const properties = asRecord(feature.properties) ?? {};
+  const coreDetails = asRecord(properties.core_details) ?? {};
+  const record = {
+    ...feature,
+    ...properties,
+    ...coreDetails
+  };
 
   const eventTypeText = readString(record, [
     "event_type",
@@ -124,13 +133,32 @@ export function normalizeWzdxRoadEvent(
     "lane_status"
   ]);
   const status = readString(record, ["status", "event_status", "work_zone_status"]);
+  const roadName = readStringOrArray(record, [
+    "road_name",
+    "road_names",
+    "route",
+    "route_name",
+    "name",
+    "location_description"
+  ]);
+  const description = readString(record, ["description", "comment", "restrictions"]);
   const restrictions = readString(record, ["restrictions", "restriction", "description"]);
   const combined = `${eventTypeText ?? ""} ${vehicleImpact ?? ""} ${status ?? ""} ${
     restrictions ?? ""
-  }`.toLowerCase();
+  } ${description ?? ""}`.toLowerCase();
 
   const geometry = extractGeometry(record);
   const point = extractPoint(record, geometry);
+  if (
+    !isWithinSanFranciscoScope({
+      latitude: point?.latitude,
+      longitude: point?.longitude,
+      text: `${roadName ?? ""} ${description ?? ""} ${restrictions ?? ""}`
+    })
+  ) {
+    return undefined;
+  }
+
   const sourceUpdatedAt = readDate(record, [
     "update_date",
     "updated",
@@ -146,19 +174,11 @@ export function normalizeWzdxRoadEvent(
     eventType: classifyWzdxType(combined),
     title:
       readString(record, ["name", "title", "headline"]) ??
-      `${eventTypeText ?? "WZDx road event"}`,
-    description:
-      readString(record, ["description", "comment", "restrictions"]) ??
-      JSON.stringify({ eventTypeText, vehicleImpact, status }),
-    roadName: readString(record, [
-      "road_name",
-      "road_names",
-      "route",
-      "route_name",
-      "name",
-      "location_description"
-    ]),
-    direction: readString(record, ["direction", "directionality", "travel_direction"]),
+      ([roadName, description].filter(Boolean).join(" - ") ||
+        `${eventTypeText ?? "WZDx road event"}`),
+    description: description ?? JSON.stringify({ eventTypeText, vehicleImpact, status }),
+    roadName,
+    direction: readCleanString(record, ["direction", "directionality", "travel_direction"]),
     severity: severityFromWzdx(combined),
     declaredState: inferWzdxDeclaredState(combined),
     geometry,
@@ -171,8 +191,34 @@ export function normalizeWzdxRoadEvent(
     lastSeenAt: ingestedAt,
     ingestedAt,
     freshnessSeconds: calculateFreshnessSeconds(sourceUpdatedAt, ingestedAt),
-    rawPayload: record
+    rawPayload: feature,
+    metadata: {
+      sourceSemantics: "sf511_wzdx_geojson",
+      sourceScope: "san_francisco"
+    }
   };
+}
+
+function readStringOrArray(record: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    const value = record[key];
+    if (!Array.isArray(value)) continue;
+
+    const items = value.filter(
+      (item): item is string => typeof item === "string" && item.trim().length > 0
+    );
+    if (items.length > 0) return items.join(", ");
+  }
+
+  return readString(record, keys);
+}
+
+function readCleanString(record: Record<string, unknown>, keys: string[]) {
+  const value = readString(record, keys);
+  if (!value || value.toLowerCase() === "undefined" || value.toLowerCase() === "null") {
+    return undefined;
+  }
+  return value;
 }
 
 function extractGeometry(record: Record<string, unknown>): Geometry | undefined {
@@ -223,13 +269,13 @@ function classifyWzdxType(text: string): RoadEventType {
 }
 
 function inferWzdxDeclaredState(text: string): DeclaredRoadState {
-  if (text.includes("open")) return "open";
   if (text.includes("road_closure") || text.includes("full closure") || text.includes("closed")) {
     return "closed";
   }
   if (text.includes("lane") || text.includes("partial")) return "partially_closed";
   if (text.includes("planned") || text.includes("pending")) return "planned";
   if (text.includes("restricted") || text.includes("detour")) return "restricted";
+  if (text.includes("open")) return "open";
   return "unknown";
 }
 

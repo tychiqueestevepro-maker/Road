@@ -15,6 +15,7 @@ import {
   readNumber,
   readString
 } from "../http.js";
+import { isWithinSanFranciscoScope } from "./scope.js";
 
 const SOURCE = "sf511_traffic_events";
 const BASE_URL = "https://api.511.org/traffic/events";
@@ -64,7 +65,8 @@ export class Sf511TrafficEventsConnector implements RoadDataConnector {
     const ingestedAt = new Date();
     return result.records
       .map((record) => normalizeTrafficEvent(record, ingestedAt))
-      .filter((event): event is NormalizedRoadEvent => Boolean(event));
+      .filter((event): event is NormalizedRoadEvent => Boolean(event))
+      .filter(isSanFranciscoTrafficEvent);
   }
 
   async healthCheck(): Promise<ConnectorHealth> {
@@ -100,6 +102,14 @@ export class Sf511TrafficEventsConnector implements RoadDataConnector {
       };
     }
   }
+}
+
+function isSanFranciscoTrafficEvent(event: NormalizedRoadEvent) {
+  return isWithinSanFranciscoScope({
+    latitude: event.latitude,
+    longitude: event.longitude,
+    text: `${event.title ?? ""} ${event.description ?? ""} ${event.roadName ?? ""}`
+  });
 }
 
 export function normalizeTrafficEvent(
@@ -208,4 +218,3 @@ function inferDeclaredState(text: string): DeclaredRoadState {
   if (text.includes("planned") || text.includes("scheduled")) return "planned";
   return "unknown";
 }
-
